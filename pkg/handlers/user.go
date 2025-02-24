@@ -11,29 +11,23 @@ import (
 )
 
 type UserRouter struct {
-	ctx *context.Context
+	Ctx context.Context
+	DB  *pkg.DB
 }
 
-const UserDataPath = "/tmp/uer-data.json"
-
-func NewUserRouter(ctx *context.Context) *UserRouter {
+func NewUserRouter(ctx context.Context, db *pkg.DB) *UserRouter {
 	return &UserRouter{
-		ctx: ctx,
+		Ctx: ctx,
+		DB:  db,
 	}
 }
 
 func (R UserRouter) CreateUser(w http.ResponseWriter, r *http.Request) {
-	db, err := pkg.NewDB()
-	if err != nil {
-		fmt.Println("[DB] No database connection")
-		return
-	}
-
 	newUser := models.User{}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("[DB] failed reading body")
+		fmt.Println("[User-Router] failed reading body")
 		http.Error(w, "failed reading body", http.StatusBadRequest)
 		return
 	}
@@ -41,11 +35,23 @@ func (R UserRouter) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(body, &newUser)
 	if err != nil {
-		fmt.Println("[router] failed parsing body to data")
+		fmt.Println("[User-Router] failed parsing body to data")
 		http.Error(w, "invalid json", http.StatusBadRequest)
+		return
 	}
 
-	newData := append(db.UserData, newUser)
+	R.DB.UpdateWithData(newUser)
 
-	db.UpdateWithData(newData)
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("User created successfully"))
+}
+
+func (R UserRouter) GetAllusers(w http.ResponseWriter, r *http.Request) {
+	stringifyData, err := json.Marshal(R.DB.UserData)
+	if err != nil {
+		http.Error(w, "failed parsing json", http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(stringifyData)
 }
