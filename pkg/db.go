@@ -57,20 +57,33 @@ func NewDB() (*DB, error) {
 }
 
 func (d *DB) UpdateWithData(data models.User) error {
-	err := os.Remove(utils.UserDataPath)
+	contents, err := os.ReadFile(utils.UserDataPath)
 	if err != nil {
-		fmt.Println("[DB] failed removing old data")
+		fmt.Println("[DB] failed querying old data")
+		contents = []byte("[]")
+	}
+
+	var users []models.User
+	err = json.Unmarshal(contents, &users)
+	if err != nil {
+		fmt.Println("[DB] failed Unmarshaling when updating DB")
+		users = make([]models.User, 0)
+	}
+	users = append(users, data)
+
+	updatedContents, err := json.Marshal(users)
+	if err != nil {
+		fmt.Println("[DB] failed marshaling when updating DB")
 		return err
 	}
 
-	contents, err := json.Marshal(data)
-	err = os.WriteFile(utils.UserDataPath, contents, 0644)
-	if err != nil {
+	if err := os.WriteFile(utils.UserDataPath, updatedContents, 0644); err != nil {
 		fmt.Println("[DB] failed updating DB")
 		return err
 	}
 
-	d.UserData = append(d.UserData, data)
+	d.UserData = users
+
 	fmt.Println("[DB] successfully created file")
 	return nil
 }

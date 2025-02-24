@@ -35,12 +35,8 @@ func main() {
 	})
 
 	// User Router
-	r.Get("/users", func(w http.ResponseWriter, r *http.Request) {
-		userRouter.GetAllusers(w, r)
-	})
-	r.Post("/new-user", func(w http.ResponseWriter, r *http.Request) {
-		userRouter.CreateUser(w, r)
-	})
+	r.Get("/users", userRouter.GetAllusers)
+	r.Post("/new-user", userRouter.CreateUser)
 
 	server := &http.Server{
 		Addr:    ":3000",
