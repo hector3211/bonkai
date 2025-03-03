@@ -1,3 +1,10 @@
 /env*
 /build/
 /bin/
+
+*.env
+
+/tmp*
+/bin*
+
+*.sqlite

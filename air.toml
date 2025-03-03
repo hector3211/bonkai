@@ -1,0 +1,30 @@
+
+root = "."
+
+cmd = "go run ./cmd/main.go"
+
+[watcher]
+include = ["**/*.go"]
+exclude = ["./tmp/*", "**/*_test.go", "vendor/*"]
+
+
+
+# Build settings
+[build]
+bin = "./tmp/main"  # Binary file
+cmd = "go build -o ./tmp/main ./cmd/main.go"
+delay = 1000        # Delay in milliseconds before restarting
+kill_signal = "SIGTERM"
+
+# Logging settings
+[log]
+level = "debug"
+
+# Misc settings
+[color]
+error = "red"
+warning = "yellow"
+info = "blue"
+
+# [screen]
+# clear_on_rebuild = false
